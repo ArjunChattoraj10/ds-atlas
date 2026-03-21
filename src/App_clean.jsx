@@ -201,14 +201,19 @@ function SearchResults({ query, onSelectMethod }) {
 
 // ─── Home Page Component ──────────────────────────────────────────────────────
 function HomePage({ onSelectTopic }) {
+  const totalMethods = TOPICS.reduce((s, t) => s + t.methods.length, 0);
   return (
     <div className="home-page page-enter">
       {/* Hero Section */}
       <div className="hero">
         <div className="hero-content">
+          <div className="hero-badge">
+            <div className="hero-badge-dot" />
+            <span className="hero-badge-text">DATA SCIENCE REFERENCE</span>
+          </div>
           <h1 className="hero-title">The Data Science Atlas</h1>
           <p className="hero-subtitle">
-            Pick a topic to explore the models
+            {TOPICS.length} topics · {totalMethods} methods. Pick a topic to explore the models
             and techniques inside it.
           </p>
         </div>
@@ -261,6 +266,8 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [domainFilter, setDomainFilter] = useState("all");
 
+  const totalMethods = TOPICS.reduce((s, t) => s + t.methods.length, 0);
+
   function goHome() {
     setView({ type: "home" });
     setSearch("");
@@ -296,6 +303,7 @@ export default function App() {
           {/* Wordmark */}
           <div className="wordmark" onClick={goHome}>
             <span className="wordmark-title">DS Atlas</span>
+            <span className="wordmark-count">{totalMethods} methods</span>
           </div>
 
           <div className="header-divider" />
