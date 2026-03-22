@@ -35,7 +35,33 @@ function MethodDetail({ method }) {
   const primaryColor = DOMAINS[method.domains[0]]?.color ?? "#60a5fa";
   return (
     <div className="method-detail detail-enter">
+      {method.description && (
+        <div className="method-description">
+          <span className="method-description-label">💡 In Plain English</span>
+          <p className="method-description-text">{method.description}</p>
+        </div>
+      )}
       <p className="method-what">{method.what}</p>
+      {(method.pros || method.cons) && (
+        <div className="pros-cons-row">
+          {method.pros && (
+            <div className="info-block pros-block" style={{ borderLeftColor: "#4ade80" }}>
+              <div className="info-label" style={{ color: "#4ade80" }}>✓ PROS</div>
+              <ul className="pros-cons-list">
+                {method.pros.map((p, i) => <li key={i}>{p}</li>)}
+              </ul>
+            </div>
+          )}
+          {method.cons && (
+            <div className="info-block cons-block" style={{ borderLeftColor: "#f87171" }}>
+              <div className="info-label" style={{ color: "#f87171" }}>✗ CONS</div>
+              <ul className="pros-cons-list">
+                {method.cons.map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
       <InfoBlock icon="→" label="INPUTS" color="#38bdf8" value={method.inputs} />
       <InfoBlock icon="←" label="OUTPUTS" color="#4ade80" value={method.outputs} />
       <InfoBlock icon="△" label="ASSUMPTIONS" color="#facc15" value={method.assumptions} />
