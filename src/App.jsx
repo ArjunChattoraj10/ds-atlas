@@ -1,6 +1,8 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DOMAINS } from "./data/domains";
 import { TOPICS } from "./data/topics";
+
+const THEME_STORAGE_KEY = "ds-atlas-theme";
 
 // ─── Chip Component ───────────────────────────────────────────────────────────
 function Chip({ domain }) {
@@ -77,11 +79,19 @@ function TopicPage({ topic, onBack, domainFilter, setDomainFilter }) {
               style={{
                 background: active
                   ? isAll
-                    ? "rgba(148,163,184,0.15)"
+                    ? "var(--domain-filter-all-active-bg)"
                     : d.dim
                   : "transparent",
-                color: active ? (isAll ? "#94a3b8" : d.color) : "#3a5270",
-                borderColor: active ? (isAll ? "#475569" : d.color) : "#0f1e38",
+                color: active
+                  ? isAll
+                    ? "var(--domain-filter-all-active-text)"
+                    : d.color
+                  : "var(--domain-filter-inactive-text)",
+                borderColor: active
+                  ? isAll
+                    ? "var(--domain-filter-all-active-border)"
+                    : d.color
+                  : "var(--domain-filter-inactive-border)",
               }}
             >
               {isAll ? "All" : d.label}
@@ -103,13 +113,17 @@ function TopicPage({ topic, onBack, domainFilter, setDomainFilter }) {
               key={m.id}
               className="method-item"
               style={{
-                borderColor: isOpen ? primary + "45" : "#0d1e38",
+                borderColor: isOpen ? primary + "45" : "var(--method-item-border)",
               }}
             >
               <div
                 className="method-header method-row"
                 onClick={() => setOpenId(isOpen ? null : m.id)}
-                style={{ background: isOpen ? "#091525" : "#07101e" }}
+                style={{
+                  background: isOpen
+                    ? "var(--method-header-open-bg)"
+                    : "var(--method-header-closed-bg)",
+                }}
               >
                 <div className="method-header-left">
                   <div
@@ -119,7 +133,12 @@ function TopicPage({ topic, onBack, domainFilter, setDomainFilter }) {
                       opacity: isOpen ? 1 : 0.35,
                     }}
                   />
-                  <span className="method-name" style={{ color: isOpen ? "#e2e8f0" : "#7a95b5" }}>
+                  <span
+                    className="method-name"
+                    style={{
+                      color: isOpen ? "var(--method-name-open)" : "var(--method-name-closed)",
+                    }}
+                  >
                     {m.name}
                   </span>
                 </div>
@@ -200,7 +219,7 @@ function SearchResults({ query, onSelectMethod }) {
 }
 
 // ─── Home Page Component ──────────────────────────────────────────────────────
-function HomePage({ onSelectTopic }) {
+function HomePage({ onSelectTopic, homeLayout, setHomeLayout }) {
   return (
     <div className="home-page page-enter">
       {/* Hero Section */}
@@ -214,42 +233,94 @@ function HomePage({ onSelectTopic }) {
         </div>
       </div>
 
-      {/* Topic Grid */}
+      {/* Topic Grid/List */}
       <div className="grid-container">
-        <div className="topic-grid">
-          {TOPICS.map((t, i) => {
-            const accent = DOMAINS[t.methods[0]?.domains[0]]?.color ?? "#60a5fa";
-            const chips = [...new Set(t.methods.flatMap((m) => m.domains))].slice(0, 3);
-            return (
-              <div
-                key={t.id}
-                className="topic-card card-hover"
-                onClick={() => onSelectTopic(t)}
-                style={{
-                  animationDelay: `${i * 0.03}s`,
-                }}
-              >
-                <div
-                  className="topic-card-bar"
-                  style={{
-                    background: `linear-gradient(90deg, ${accent}80, transparent)`,
-                  }}
-                />
-                <div className="topic-card-header">
-                  <span className="topic-card-icon">{t.icon}</span>
-                  <span className="topic-card-count">{t.methods.length} methods</span>
-                </div>
-                <h3 className="topic-card-title">{t.name}</h3>
-                <p className="topic-card-summary">{t.summary}</p>
-                <div className="topic-card-chips">
-                  {chips.map((d) => (
-                    <Chip key={d} domain={d} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+        <div className="home-controls">
+          <div className="layout-toggle" aria-label="Choose homepage layout">
+            <button
+              className={`layout-toggle-button${homeLayout === "grid" ? " active" : ""}`}
+              onClick={() => setHomeLayout("grid")}
+            >
+              Tiles
+            </button>
+            <button
+              className={`layout-toggle-button${homeLayout === "list" ? " active" : ""}`}
+              onClick={() => setHomeLayout("list")}
+            >
+              List
+            </button>
+          </div>
         </div>
+        {homeLayout === "list" ? (
+          <div className="topic-list">
+            {TOPICS.map((t, i) => {
+              const accent = DOMAINS[t.methods[0]?.domains[0]]?.color ?? "#60a5fa";
+              const chips = [...new Set(t.methods.flatMap((m) => m.domains))].slice(0, 4);
+              return (
+                <div
+                  key={t.id}
+                  className="topic-list-item card-hover"
+                  onClick={() => onSelectTopic(t)}
+                  style={{
+                    animationDelay: `${i * 0.03}s`,
+                  }}
+                >
+                  <div className="topic-list-accent" style={{ background: accent }} />
+                  <div className="topic-list-content">
+                    <div className="topic-list-main">
+                      <div className="topic-list-title-row">
+                        <span className="topic-list-icon">{t.icon}</span>
+                        <h3 className="topic-list-title">{t.name}</h3>
+                        <span className="topic-list-count">{t.methods.length} methods</span>
+                      </div>
+                      <p className="topic-list-summary">{t.summary}</p>
+                    </div>
+                    <div className="topic-list-chips">
+                      {chips.map((d) => (
+                        <Chip key={d} domain={d} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="topic-grid">
+            {TOPICS.map((t, i) => {
+              const accent = DOMAINS[t.methods[0]?.domains[0]]?.color ?? "#60a5fa";
+              const chips = [...new Set(t.methods.flatMap((m) => m.domains))].slice(0, 3);
+              return (
+                <div
+                  key={t.id}
+                  className="topic-card card-hover"
+                  onClick={() => onSelectTopic(t)}
+                  style={{
+                    animationDelay: `${i * 0.03}s`,
+                  }}
+                >
+                  <div
+                    className="topic-card-bar"
+                    style={{
+                      background: `linear-gradient(90deg, ${accent}80, transparent)`,
+                    }}
+                  />
+                  <div className="topic-card-header">
+                    <span className="topic-card-icon">{t.icon}</span>
+                    <span className="topic-card-count">{t.methods.length} methods</span>
+                  </div>
+                  <h3 className="topic-card-title">{t.name}</h3>
+                  <p className="topic-card-summary">{t.summary}</p>
+                  <div className="topic-card-chips">
+                    {chips.map((d) => (
+                      <Chip key={d} domain={d} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -258,8 +329,19 @@ function HomePage({ onSelectTopic }) {
 // ─── Main App Component ────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState({ type: "home" });
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "dark";
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+  });
+  const [homeLayout, setHomeLayout] = useState("grid");
   const [search, setSearch] = useState("");
   const [domainFilter, setDomainFilter] = useState("all");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   function goHome() {
     setView({ type: "home" });
@@ -289,7 +371,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ background: "#070d1b", minHeight: "100vh" }}>
+    <div className="app-shell">
       {/* Header */}
       <div className="header">
         <div className="header-content">
@@ -324,11 +406,30 @@ export default function App() {
               </span>
             )}
           </div>
+
+          <div className="theme-toggle" aria-label="Theme">
+            <button
+              className="theme-toggle-button"
+              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              <span className="theme-toggle-icon" aria-hidden="true">
+                {theme === "dark" ? "☀" : "☾"}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Page Content */}
-      {view.type === "home" && <HomePage onSelectTopic={handleSelectTopic} />}
+      {view.type === "home" && (
+        <HomePage
+          onSelectTopic={handleSelectTopic}
+          homeLayout={homeLayout}
+          setHomeLayout={setHomeLayout}
+        />
+      )}
       {view.type === "search" && (
         <SearchResults query={search} onSelectMethod={handleSelectMethod} />
       )}
