@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
 :root {
+  --font-family-ui: 'Segoe UI', 'Segoe UI Variable', Tahoma, Geneva, Verdana, sans-serif;
+  --font-family-ui-light: 'Segoe UI Light', 'Segoe UI', 'Segoe UI Variable', Tahoma, Geneva, Verdana, sans-serif;
   --app-bg: #070d1b;
   --text-primary: #e2e8f0;
   --muted-text: #507090;
@@ -125,7 +125,7 @@ body {
 body {
   background: var(--app-bg);
   color: var(--text-primary);
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
   line-height: 1.5;
 }
 
@@ -214,7 +214,7 @@ input:focus {
   padding: 3px 10px;
   border-radius: 4px;
   font-size: 11.5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
   font-weight: 500;
   letter-spacing: 0.05em;
 }
@@ -228,7 +228,7 @@ input:focus {
   cursor: pointer;
   transition: all 0.13s;
   border: 1px solid transparent;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
   background: transparent;
 }
 
@@ -243,7 +243,7 @@ input:focus {
   cursor: pointer;
   transition: color 0.13s;
   font-size: 15px;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
   color: var(--back-text);
   padding: 8px 0;
 }
@@ -283,7 +283,7 @@ input:focus {
 }
 
 .wordmark-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-family-ui);
   font-weight: 800;
   font-size: 20px;
   color: var(--wordmark);
@@ -291,7 +291,7 @@ input:focus {
 }
 
 .wordmark-count {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
   font-size: 11px;
   color: var(--wordmark-count);
   letter-spacing: 0.05em;
@@ -307,7 +307,7 @@ input:focus {
 .breadcrumb {
   font-size: 14px;
   color: var(--breadcrumb);
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
   flex-shrink: 0;
   max-width: 160px;
   overflow: hidden;
@@ -329,7 +329,7 @@ input:focus {
   padding: 9px 34px;
   color: var(--search-text);
   font-size: 15px;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
 }
 
 .search-icon {
@@ -357,7 +357,7 @@ input:focus {
 
 .hero {
   border-bottom: 1px solid var(--header-border);
-  padding: 56px 20px 48px;
+  padding: 56px 20px 20px;
   background: var(--hero-bg);
 }
 
@@ -368,7 +368,7 @@ input:focus {
 }
 
 .hero-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-family-ui);
   font-weight: 800;
   font-size: clamp(34px, 5.5vw, 58px);
   color: var(--hero-title);
@@ -388,7 +388,7 @@ input:focus {
 .grid-container {
   max-width: 920px;
   margin: 0 auto;
-  padding: 36px 24px 72px;
+  padding: 20px 24px 72px;
 }
 
 .home-controls {
@@ -413,7 +413,7 @@ input:focus {
   border-radius: 6px;
   padding: 6px 11px;
   font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
   letter-spacing: 0.03em;
   cursor: pointer;
   transition: background 0.13s, color 0.13s;
@@ -459,16 +459,16 @@ input:focus {
 }
 
 .topic-card-count {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
   font-size: 11px;
   color: var(--wordmark-count);
   letter-spacing: 0.04em;
 }
 
 .topic-card-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-family-ui-light);
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--topic-title);
   line-height: 1.35;
   margin-bottom: 10px;
@@ -532,15 +532,15 @@ input:focus {
 }
 
 .topic-list-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-family-ui-light);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--topic-title);
   letter-spacing: -0.01em;
 }
 
 .topic-list-count {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
   font-size: 11px;
   color: var(--wordmark-count);
   letter-spacing: 0.04em;
@@ -579,7 +579,7 @@ input:focus {
 }
 
 .topic-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-family-ui);
   font-size: clamp(24px, 4.5vw, 36px);
   font-weight: 800;
   color: var(--topic-page-title);
@@ -609,7 +609,7 @@ input:focus {
   cursor: pointer;
   transition: all 0.13s;
   border: 1px solid transparent;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
   background: transparent;
 }
 
@@ -627,7 +627,7 @@ input:focus {
   color: var(--empty-state);
   font-size: 15px;
   padding: 20px 0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
 }
 
 .method-item {
@@ -667,7 +667,7 @@ input:focus {
 }
 
 .method-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
   font-weight: 600;
   font-size: 16px;
   color: var(--method-name-closed);
@@ -709,7 +709,7 @@ input:focus {
 
 .info-label {
   font-size: 11.5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
   letter-spacing: 0.08em;
   margin-bottom: 5px;
 }
@@ -732,7 +732,7 @@ input:focus {
 }
 
 .search-results-count {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-family-ui);
   font-size: 12px;
   color: var(--muted-text);
   letter-spacing: 0.08em;
@@ -768,7 +768,7 @@ input:focus {
 .search-result-title-container {}
 
 .search-result-method-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family-ui);
   font-weight: 600;
   font-size: 16px;
   color: var(--search-text);
@@ -933,3 +933,4 @@ input:focus {
     font-size: 13px;
   }
 }
+
