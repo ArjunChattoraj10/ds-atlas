@@ -298,8 +298,8 @@ function HomePage({ onSelectTopic, homeLayout, setHomeLayout }) {
         <div className="hero-content">
           <h1 className="hero-title">The Data Science Atlas</h1>
           <p className="hero-subtitle">
-            Pick a topic to explore the models
-            and techniques inside it.
+            A quick-reference for Data Science methods.<br />
+            What it does. When to use it. In plain English.
           </p>
         </div>
       </div>
@@ -560,6 +560,11 @@ export default function App() {
           defaultOpenId={view.jumpTo}
         />
       )}
+
+      {/* Footer */}
+      <footer className="footer">
+        <p>&copy; {new Date().getFullYear()} Arjun Chattoraj</p>
+      </footer>
     </div>
   );
 }

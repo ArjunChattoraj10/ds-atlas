@@ -353,8 +353,6 @@ input:focus {
 }
 
 /* ─── Page Layouts ────────────────────────────────────────────────────────── */
-.home-page {}
-
 .hero {
   border-bottom: 1px solid var(--header-border);
   padding: 56px 20px 20px;
@@ -848,8 +846,6 @@ input:focus {
   margin-bottom: 5px;
 }
 
-.search-result-title-container {}
-
 .search-result-method-name {
   font-family: var(--font-family-ui);
   font-weight: 600;
@@ -918,7 +914,25 @@ input:focus {
 .app-shell {
   background: var(--app-bg);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+.footer {
+  margin-top: auto;
+  border-top: 1px solid var(--divider);
+  background: var(--app-bg);
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.footer p {
+  font-size: 13px;
+  color: var(--muted-text);
+  margin: 0;
+}
+
 
 /* ─── Responsive Design ────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
