@@ -429,7 +429,7 @@ export const TOPICS = [
     ]
   },
   {
-    id:"hypothesis", icon:"⚖️", name:"Test Statistical Hypotheses",
+    id:"hypothesis", icon:"🔬", name:"Test Statistical Hypotheses",
     summary:"Assess the strength of statistical evidence for or against a specific claim.",
     methods:[
       { id:"ttest", name:"t-Test (One / Two Sample / Paired)", domains:["stats"],
