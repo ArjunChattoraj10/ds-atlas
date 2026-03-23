@@ -563,7 +563,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <p>&copy; 2026 Arjun Chattoraj</p>
+        <p>&copy; {new Date().getFullYear()} Arjun Chattoraj</p>
       </footer>
     </div>
   );
