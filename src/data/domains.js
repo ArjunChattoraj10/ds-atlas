@@ -1,5 +1,6 @@
 // Domain taxonomy with colors and labels
 export const DOMAINS = {
+  gen:   { label: "Generative AI", color: "#818cf8", dim: "rgba(129,140,248,0.13)" },
   ml:    { label: "ML",            color: "#60a5fa", dim: "rgba(96,165,250,0.13)"  },
   stats: { label: "Stats",         color: "#4ade80", dim: "rgba(74,222,128,0.13)"  },
   econ:  { label: "Econometrics",  color: "#c084fc", dim: "rgba(192,132,252,0.13)" },
