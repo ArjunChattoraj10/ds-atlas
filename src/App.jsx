@@ -4,6 +4,51 @@ import { TOPICS } from "./data/topics";
 
 const THEME_STORAGE_KEY = "ds-atlas-theme";
 
+function getUrlForView(view) {
+  if (view.type === "topic") {
+    const params = new URLSearchParams();
+    params.set("topic", view.topic.id);
+    if (view.jumpTo) {
+      params.set("method", view.jumpTo);
+    }
+    return `/?${params.toString()}`;
+  }
+  if (view.type === "search" && view.query?.trim().length > 0) {
+    const params = new URLSearchParams();
+    params.set("q", view.query);
+    return `/?${params.toString()}`;
+  }
+  return "/";
+}
+
+function getViewFromLocation(location) {
+  if (!location) {
+    return { type: "home" };
+  }
+  const url = new URL(location.href);
+  const topicFromQuery = url.searchParams.get("topic");
+  if (topicFromQuery) {
+    const topic = TOPICS.find((t) => t.id === topicFromQuery);
+    if (topic) {
+      const jumpTo = url.searchParams.get("method") ?? undefined;
+      return { type: "topic", topic, jumpTo };
+    }
+  }
+  const topicMatch = url.pathname.match(/^\/topic\/([^/]+)(?:\/|$)/);
+  if (topicMatch) {
+    const topic = TOPICS.find((t) => t.id === topicMatch[1]);
+    if (topic) {
+      const jumpTo = url.searchParams.get("method") ?? undefined;
+      return { type: "topic", topic, jumpTo };
+    }
+  }
+  const query = url.searchParams.get("q") ?? "";
+  if (query.trim().length > 1) {
+    return { type: "search", query };
+  }
+  return { type: "home" };
+}
+
 // ─── Chip Component ───────────────────────────────────────────────────────────
 function Chip({ domain }) {
   const d = DOMAINS[domain];
@@ -71,8 +116,8 @@ function MethodDetail({ method }) {
 }
 
 // ─── Topic Page Component ─────────────────────────────────────────────────────
-function TopicPage({ topic, onBack, domainFilter, setDomainFilter }) {
-  const [openId, setOpenId] = useState(null);
+function TopicPage({ topic, onBack, domainFilter, setDomainFilter, defaultOpenId }) {
+  const [openId, setOpenId] = useState(defaultOpenId ?? null);
   const methods =
     domainFilter === "all"
       ? topic.methods
@@ -354,14 +399,22 @@ function HomePage({ onSelectTopic, homeLayout, setHomeLayout }) {
 
 // ─── Main App Component ────────────────────────────────────────────────────────
 export default function App() {
-  const [view, setView] = useState({ type: "home" });
+  const initialView = useMemo(() => {
+    if (typeof window === "undefined") {
+      return { type: "home" };
+    }
+    return getViewFromLocation(window.location);
+  }, []);
+  const [view, setView] = useState(initialView);
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return "dark";
     const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
   });
   const [homeLayout, setHomeLayout] = useState("grid");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() =>
+    initialView.type === "search" ? initialView.query : "",
+  );
   const [domainFilter, setDomainFilter] = useState("all");
 
   useEffect(() => {
@@ -369,31 +422,69 @@ export default function App() {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
-  function goHome() {
-    setView({ type: "home" });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.history.replaceState(initialView, "", getUrlForView(initialView));
+  }, [initialView]);
+
+  const navigate = (nextView, { replace = false } = {}) => {
+    if (typeof window !== "undefined") {
+      const url = getUrlForView(nextView);
+      window.history[replace ? "replaceState" : "pushState"](nextView, "", url);
+    }
+    setView(nextView);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handlePopState = (event) => {
+      const nextView = event.state ?? getViewFromLocation(window.location);
+      setView(nextView);
+      if (nextView.type === "search") {
+        setSearch(nextView.query ?? "");
+      } else {
+        setSearch("");
+      }
+      if (nextView.type !== "topic") {
+        setDomainFilter("all");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [setSearch, setDomainFilter]);
+
+  function goHome(options = {}) {
+    if (view.type === "home" && !options.replace) {
+      setSearch("");
+      setDomainFilter("all");
+      return;
+    }
     setSearch("");
     setDomainFilter("all");
+    navigate({ type: "home" }, options);
   }
 
   function handleSearch(val) {
     setSearch(val);
-    if (val.trim().length > 1) {
-      setView({ type: "search" });
-    } else if (!val) {
-      setView((v) => (v.type === "search" ? { type: "home" } : v));
+    const trimmed = val.trim();
+    if (trimmed.length > 1) {
+      const nextView = { type: "search", query: val };
+      navigate(nextView, { replace: view.type === "search" });
+    } else if (view.type === "search") {
+      goHome();
     }
   }
 
   function handleSelectTopic(topic) {
-    setView({ type: "topic", topic });
     setSearch("");
     setDomainFilter("all");
+    navigate({ type: "topic", topic });
   }
 
   function handleSelectMethod(topic, method) {
-    setView({ type: "topic", topic, jumpTo: method.id });
     setSearch("");
     setDomainFilter("all");
+    navigate({ type: "topic", topic, jumpTo: method.id });
   }
 
   return (
@@ -461,10 +552,12 @@ export default function App() {
       )}
       {view.type === "topic" && (
         <TopicPage
+          key={`${view.topic.id}-${view.jumpTo ?? ""}`}
           topic={view.topic}
           onBack={goHome}
           domainFilter={domainFilter}
           setDomainFilter={setDomainFilter}
+          defaultOpenId={view.jumpTo}
         />
       )}
     </div>
