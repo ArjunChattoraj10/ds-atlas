@@ -159,28 +159,30 @@ function TopicPage({ topic, onBack, domainFilter, setDomainFilter }) {
                       opacity: isOpen ? 1 : 0.35,
                     }}
                   />
-                  <span
-                    className="method-name"
-                    style={{
-                      color: isOpen ? "var(--method-name-open)" : "var(--method-name-closed)",
-                    }}
-                  >
-                    {m.name}
-                  </span>
+                  <div className="method-name-chips">
+                    <span
+                      className="method-name"
+                      style={{
+                        color: isOpen ? "var(--method-name-open)" : "var(--method-name-closed)",
+                      }}
+                    >
+                      {m.name}
+                    </span>
+                    <div className="method-chips">
+                      {m.domains.map((d) => (
+                        <Chip key={d} domain={d} />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <div className="method-header-right">
-                  {m.domains.map((d) => (
-                    <Chip key={d} domain={d} />
-                  ))}
-                  <span
-                    className="method-chevron"
-                    style={{
-                      transform: isOpen ? "rotate(90deg)" : "none",
-                    }}
-                  >
-                    ›
-                  </span>
-                </div>
+                <span
+                  className="method-chevron"
+                  style={{
+                    transform: isOpen ? "rotate(90deg)" : "none",
+                  }}
+                >
+                  ›
+                </span>
               </div>
               {isOpen && <MethodDetail method={m} />}
             </div>
@@ -224,17 +226,15 @@ function SearchResults({ query, onSelectMethod }) {
             onClick={() => onSelectMethod(topic, method)}
           >
             <div className="search-result-header">
-              <div className="search-result-title-container">
-                <span className="search-result-method-name">{method.name}</span>
-                <span className="search-result-topic">
-                  {topic.icon} {topic.name}
-                </span>
-              </div>
-              <div className="search-result-domains">
-                {method.domains.map((d) => (
-                  <Chip key={d} domain={d} />
-                ))}
-              </div>
+              <span className="search-result-method-name">{method.name}</span>
+              <span className="search-result-topic">
+                {topic.icon} {topic.name}
+              </span>
+            </div>
+            <div className="search-result-domains">
+              {method.domains.map((d) => (
+                <Chip key={d} domain={d} />
+              ))}
             </div>
             <p className="search-result-excerpt">{method.what.slice(0, 130)}…</p>
           </div>

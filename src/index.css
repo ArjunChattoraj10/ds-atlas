@@ -656,6 +656,20 @@ input:focus {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex: 1;
+}
+
+.method-name-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.method-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .method-dot {
@@ -675,10 +689,7 @@ input:focus {
 }
 
 .method-header-right {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  flex-shrink: 0;
+  display: none;
 }
 
 .method-chevron {
@@ -831,9 +842,9 @@ input:focus {
 
 .search-result-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
   margin-bottom: 5px;
 }
 
@@ -849,13 +860,13 @@ input:focus {
 .search-result-topic {
   font-size: 13px;
   color: var(--empty-state);
-  margin-left: 8px;
 }
 
 .search-result-domains {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
-  flex-shrink: 0;
+  margin-bottom: 6px;
 }
 
 .search-result-excerpt {
