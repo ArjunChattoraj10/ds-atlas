@@ -6,7 +6,12 @@ const THEME_STORAGE_KEY = "ds-atlas-theme";
 
 function getUrlForView(view) {
   if (view.type === "topic") {
-    return `/topic/${view.topic.id}`;
+    const params = new URLSearchParams();
+    params.set("topic", view.topic.id);
+    if (view.jumpTo) {
+      params.set("method", view.jumpTo);
+    }
+    return `/?${params.toString()}`;
   }
   if (view.type === "search" && view.query?.trim().length > 0) {
     const params = new URLSearchParams();
@@ -21,11 +26,20 @@ function getViewFromLocation(location) {
     return { type: "home" };
   }
   const url = new URL(location.href);
+  const topicFromQuery = url.searchParams.get("topic");
+  if (topicFromQuery) {
+    const topic = TOPICS.find((t) => t.id === topicFromQuery);
+    if (topic) {
+      const jumpTo = url.searchParams.get("method") ?? undefined;
+      return { type: "topic", topic, jumpTo };
+    }
+  }
   const topicMatch = url.pathname.match(/^\/topic\/([^/]+)(?:\/|$)/);
   if (topicMatch) {
     const topic = TOPICS.find((t) => t.id === topicMatch[1]);
     if (topic) {
-      return { type: "topic", topic };
+      const jumpTo = url.searchParams.get("method") ?? undefined;
+      return { type: "topic", topic, jumpTo };
     }
   }
   const query = url.searchParams.get("q") ?? "";
@@ -102,8 +116,8 @@ function MethodDetail({ method }) {
 }
 
 // ─── Topic Page Component ─────────────────────────────────────────────────────
-function TopicPage({ topic, onBack, domainFilter, setDomainFilter }) {
-  const [openId, setOpenId] = useState(null);
+function TopicPage({ topic, onBack, domainFilter, setDomainFilter, defaultOpenId }) {
+  const [openId, setOpenId] = useState(defaultOpenId ?? null);
   const methods =
     domainFilter === "all"
       ? topic.methods
@@ -538,10 +552,12 @@ export default function App() {
       )}
       {view.type === "topic" && (
         <TopicPage
+          key={`${view.topic.id}-${view.jumpTo ?? ""}`}
           topic={view.topic}
           onBack={goHome}
           domainFilter={domainFilter}
           setDomainFilter={setDomainFilter}
+          defaultOpenId={view.jumpTo}
         />
       )}
     </div>
