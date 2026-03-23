@@ -4,6 +4,37 @@ import { TOPICS } from "./data/topics";
 
 const THEME_STORAGE_KEY = "ds-atlas-theme";
 
+function getUrlForView(view) {
+  if (view.type === "topic") {
+    return `/topic/${view.topic.id}`;
+  }
+  if (view.type === "search" && view.query?.trim().length > 0) {
+    const params = new URLSearchParams();
+    params.set("q", view.query);
+    return `/?${params.toString()}`;
+  }
+  return "/";
+}
+
+function getViewFromLocation(location) {
+  if (!location) {
+    return { type: "home" };
+  }
+  const url = new URL(location.href);
+  const topicMatch = url.pathname.match(/^\/topic\/([^/]+)(?:\/|$)/);
+  if (topicMatch) {
+    const topic = TOPICS.find((t) => t.id === topicMatch[1]);
+    if (topic) {
+      return { type: "topic", topic };
+    }
+  }
+  const query = url.searchParams.get("q") ?? "";
+  if (query.trim().length > 1) {
+    return { type: "search", query };
+  }
+  return { type: "home" };
+}
+
 // ─── Chip Component ───────────────────────────────────────────────────────────
 function Chip({ domain }) {
   const d = DOMAINS[domain];
@@ -354,14 +385,22 @@ function HomePage({ onSelectTopic, homeLayout, setHomeLayout }) {
 
 // ─── Main App Component ────────────────────────────────────────────────────────
 export default function App() {
-  const [view, setView] = useState({ type: "home" });
+  const initialView = useMemo(() => {
+    if (typeof window === "undefined") {
+      return { type: "home" };
+    }
+    return getViewFromLocation(window.location);
+  }, []);
+  const [view, setView] = useState(initialView);
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return "dark";
     const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
   });
   const [homeLayout, setHomeLayout] = useState("grid");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() =>
+    initialView.type === "search" ? initialView.query : "",
+  );
   const [domainFilter, setDomainFilter] = useState("all");
 
   useEffect(() => {
@@ -369,31 +408,69 @@ export default function App() {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
-  function goHome() {
-    setView({ type: "home" });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.history.replaceState(initialView, "", getUrlForView(initialView));
+  }, [initialView]);
+
+  const navigate = (nextView, { replace = false } = {}) => {
+    if (typeof window !== "undefined") {
+      const url = getUrlForView(nextView);
+      window.history[replace ? "replaceState" : "pushState"](nextView, "", url);
+    }
+    setView(nextView);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handlePopState = (event) => {
+      const nextView = event.state ?? getViewFromLocation(window.location);
+      setView(nextView);
+      if (nextView.type === "search") {
+        setSearch(nextView.query ?? "");
+      } else {
+        setSearch("");
+      }
+      if (nextView.type !== "topic") {
+        setDomainFilter("all");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [setSearch, setDomainFilter]);
+
+  function goHome(options = {}) {
+    if (view.type === "home" && !options.replace) {
+      setSearch("");
+      setDomainFilter("all");
+      return;
+    }
     setSearch("");
     setDomainFilter("all");
+    navigate({ type: "home" }, options);
   }
 
   function handleSearch(val) {
     setSearch(val);
-    if (val.trim().length > 1) {
-      setView({ type: "search" });
-    } else if (!val) {
-      setView((v) => (v.type === "search" ? { type: "home" } : v));
+    const trimmed = val.trim();
+    if (trimmed.length > 1) {
+      const nextView = { type: "search", query: val };
+      navigate(nextView, { replace: view.type === "search" });
+    } else if (view.type === "search") {
+      goHome();
     }
   }
 
   function handleSelectTopic(topic) {
-    setView({ type: "topic", topic });
     setSearch("");
     setDomainFilter("all");
+    navigate({ type: "topic", topic });
   }
 
   function handleSelectMethod(topic, method) {
-    setView({ type: "topic", topic, jumpTo: method.id });
     setSearch("");
     setDomainFilter("all");
+    navigate({ type: "topic", topic, jumpTo: method.id });
   }
 
   return (
