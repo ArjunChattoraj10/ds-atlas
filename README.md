@@ -22,7 +22,7 @@ It covers methods across Machine Learning, Statistics, Econometrics, Generative 
 - **Pros & Cons**: structured trade-off summaries to help you choose between methods
 - **Inputs / Outputs / Assumptions / Notes**: the practical spec for each technique
 - **Tag filtering**: filter methods by discipline (ML, Stats, Econometrics, Bayesian, NLP, etc.)
-- **Search**: find any method or concept instantly
+- **Smart Search**: intent-aware ranked search with typo-tolerance, synonym expansion, and contextual relevance cues
 - **Tiles / List toggle**: switch between browsing modes
 - **Light / Dark mode**: because obviously
 

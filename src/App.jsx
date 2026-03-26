@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DOMAINS } from "./data/domains";
 import { TOPICS } from "./data/topics";
 import { USE_CASE_CATEGORIES } from "./data/useCases";
+import { prepareSearchDocuments, runSmartSearch } from "./search/smartSearch";
 
 const THEME_STORAGE_KEY = "ds-atlas-theme";
 const HERO_TITLE = "The Data Science Atlas";
@@ -31,51 +32,66 @@ function scrollToSectionTop(element) {
   window.scrollTo({ top: Math.max(0, targetTop), left: 0, behavior: "auto" });
 }
 
-function buildSearchText(parts) {
-  return parts.filter(Boolean).join(" ").toLowerCase();
-}
+const METHOD_SEARCH_INDEX = prepareSearchDocuments(
+  TOPICS.flatMap((topic) =>
+    topic.methods.map((method) => {
+      const domainLabels = method.domains
+        .map((domain) => DOMAINS[domain]?.label ?? domain)
+        .join(" ");
+      const methodDetails = [
+        method.what,
+        method.inputs,
+        method.outputs,
+        method.assumptions,
+        method.notes,
+      ]
+        .filter(Boolean)
+        .join(" ");
 
-function findSearchMatches(index, query, limit = 24) {
-  const matches = [];
-  for (const item of index) {
-    if (item.searchText.includes(query)) {
-      matches.push(item);
-      if (matches.length === limit) {
-        break;
-      }
-    }
-  }
-  return matches;
-}
-
-const METHOD_SEARCH_INDEX = TOPICS.flatMap((topic) =>
-  topic.methods.map((method) => ({
-    topic,
-    method,
-    searchText: buildSearchText([
-      method.name,
-      method.what,
-      method.inputs,
-      method.outputs,
-      method.notes,
-      topic.name,
-    ]),
-  })),
+      return {
+        id: `${topic.id}:${method.id}`,
+        payload: { topic, method },
+        fields: [
+          { label: "Method name", text: method.name, weight: 12 },
+          { label: "Topic", text: [topic.name, topic.summary].filter(Boolean).join(" "), weight: 8 },
+          { label: "Domain", text: domainLabels, weight: 8 },
+          { label: "In plain English", text: method.description, weight: 7 },
+          { label: "Method details", text: methodDetails, weight: 5 },
+          { label: "Pros and cons", text: [...(method.pros ?? []), ...(method.cons ?? [])].join(" "), weight: 3 },
+          {
+            label: "Related methods",
+            text: (method.seeAlso ?? []).map((item) => item.label).join(" "),
+            weight: 3,
+          },
+        ],
+      };
+    }),
+  ),
 );
 
-const USE_CASE_SEARCH_INDEX = USE_CASE_CATEGORIES.flatMap((category, categoryIndex) =>
-  category.useCases.map((useCase) => ({
-    category,
-    categoryIndex,
-    useCase,
-    searchText: buildSearchText([
-      useCase.name,
-      useCase.description,
-      useCase.poweredBy,
-      category.name,
-      ...(useCase.examples ?? []),
-    ]),
-  })),
+const USE_CASE_SEARCH_INDEX = prepareSearchDocuments(
+  USE_CASE_CATEGORIES.flatMap((category, categoryIndex) =>
+    category.useCases.map((useCase) => ({
+      id: `${category.id}:${useCase.id}`,
+      payload: { category, categoryIndex, useCase },
+      fields: [
+        { label: "Use case", text: useCase.name, weight: 12 },
+        {
+          label: "Business domain",
+          text: [category.name, category.description].filter(Boolean).join(" "),
+          weight: 8,
+        },
+        { label: "Problem", text: useCase.description, weight: 7 },
+        { label: "How it works", text: useCase.poweredBy, weight: 5 },
+        { label: "Examples", text: (useCase.examples ?? []).join(" "), weight: 4 },
+        {
+          label: "Related methods",
+          text: (useCase.relatedMethods ?? []).map((item) => item.name).join(" "),
+          weight: 6,
+        },
+      ],
+    })),
+  ),
 );
 
 function getUrlForView(view) {
@@ -549,15 +565,29 @@ function TopicPage({
 }
 
 // ─── Search Results Component ─────────────────────────────────────────────────
-function SearchResults({ query, onSelectMethod }) {
+const MODEL_SEARCH_SUGGESTIONS = [
+  "predict customer churn",
+  "detect fraud transactions",
+  "explain model predictions",
+  "summarize long text",
+  "time series forecasting",
+];
+
+const USE_CASE_SEARCH_SUGGESTIONS = [
+  "reduce customer churn",
+  "find fraudulent payments",
+  "improve marketing ROI",
+  "forecast sales revenue",
+  "automate support tickets",
+];
+
+function SearchResults({ query, onSelectMethod, onApplySuggestion }) {
   const searchResultsRef = useRef(null);
   const results = useMemo(() => {
-    const q = query.toLowerCase();
-    return findSearchMatches(METHOD_SEARCH_INDEX, q).map(({ topic, method }) => ({
-      topic,
-      method,
-    }));
+    return runSmartSearch(METHOD_SEARCH_INDEX, query, { limit: 30, minScore: 5 });
   }, [query]);
+  const topResult = results[0];
+  const confidence = topResult ? Math.min(99, Math.round(topResult.matchCoverage * 100)) : 0;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -570,31 +600,69 @@ function SearchResults({ query, onSelectMethod }) {
     <div className="search-results-page page-enter" ref={searchResultsRef}>
       <div className="search-results-header">
         <span className="search-results-count">
-          {results.length} RESULT{results.length !== 1 ? "S" : ""} FOR "{query.toUpperCase()}"
+          {results.length} RANKED RESULT{results.length !== 1 ? "S" : ""} FOR "{query.toUpperCase()}"
         </span>
+        <p className="search-results-subtitle">
+          Smart search is using intent, synonyms, and typo-tolerance.
+          {topResult ? ` Best match confidence: ${confidence}%.` : ""}
+        </p>
       </div>
       {results.length === 0 && (
-        <div className="empty-state">Nothing found. Try a different term.</div>
+        <>
+          <div className="empty-state">
+            No strong match yet. Try describing your goal in plain English.
+          </div>
+          <div className="search-suggestion-row">
+            {MODEL_SEARCH_SUGGESTIONS.map((suggestion) => (
+              <button
+                key={suggestion}
+                className="search-suggestion-chip"
+                onClick={() => onApplySuggestion(suggestion)}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </>
       )}
       <div className="search-results-list">
-        {results.map(({ topic, method }) => (
+        {results.map(({ topic, method, score, reasons }, index) => (
           <div
-            key={method.id}
+            key={`${method.id}-${topic.id}`}
             className="search-result-item search-row"
             onClick={() => onSelectMethod(topic, method)}
           >
             <div className="search-result-header">
-              <span className="search-result-method-name">{method.name}</span>
-              <span className="search-result-topic">
-                {topic.icon} {topic.name}
-              </span>
+              <div className="search-result-title-group">
+                <span className="search-result-rank">#{index + 1}</span>
+                <span className="search-result-method-name">{method.name}</span>
+              </div>
+              <div className="search-result-meta-group">
+                <span className="search-result-topic">
+                  {topic.icon} {topic.name}
+                </span>
+                <span className="search-result-score">
+                  Match {Math.min(99, Math.round((score / 30) * 100))}%
+                </span>
+              </div>
             </div>
             <div className="search-result-domains">
               {method.domains.map((d) => (
                 <Chip key={d} domain={d} />
               ))}
             </div>
-            <p className="search-result-excerpt">{method.what.slice(0, 130)}…</p>
+            {reasons.length > 0 && (
+              <div className="search-result-reasons">
+                {reasons.slice(0, 3).map((reason) => (
+                  <span key={reason} className="search-result-reason">
+                    {reason}
+                  </span>
+                ))}
+              </div>
+            )}
+            <p className="search-result-excerpt">
+              {(method.description ?? method.what).slice(0, 155)}…
+            </p>
           </div>
         ))}
       </div>
@@ -760,18 +828,13 @@ function UseCaseCategoryPage({
 }
 
 // ─── Use Cases Search Results ─────────────────────────────────────────────────
-function UseCasesSearchResults({ query, onSelectUseCase }) {
+function UseCasesSearchResults({ query, onSelectUseCase, onApplySuggestion }) {
   const useCaseSearchResultsRef = useRef(null);
   const results = useMemo(() => {
-    const q = query.toLowerCase();
-    return findSearchMatches(USE_CASE_SEARCH_INDEX, q).map(
-      ({ category, categoryIndex, useCase }) => ({
-        category,
-        categoryIndex,
-        useCase,
-      }),
-    );
+    return runSmartSearch(USE_CASE_SEARCH_INDEX, query, { limit: 30, minScore: 5 });
   }, [query]);
+  const topResult = results[0];
+  const confidence = topResult ? Math.min(99, Math.round(topResult.matchCoverage * 100)) : 0;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -784,26 +847,62 @@ function UseCasesSearchResults({ query, onSelectUseCase }) {
     <div className="uc-search-results-page page-enter" ref={useCaseSearchResultsRef}>
       <div className="search-results-header">
         <span className="search-results-count">
-          {results.length} RESULT{results.length !== 1 ? "S" : ""} FOR "{query.toUpperCase()}"
+          {results.length} RANKED RESULT{results.length !== 1 ? "S" : ""} FOR "{query.toUpperCase()}"
         </span>
+        <p className="search-results-subtitle">
+          Matches include related methods, examples, and business context.
+          {topResult ? ` Best match confidence: ${confidence}%.` : ""}
+        </p>
       </div>
       {results.length === 0 && (
-        <div className="empty-state">Nothing found. Try a different term.</div>
+        <>
+          <div className="empty-state">
+            No strong match yet. Try stating the business problem you want to solve.
+          </div>
+          <div className="search-suggestion-row">
+            {USE_CASE_SEARCH_SUGGESTIONS.map((suggestion) => (
+              <button
+                key={suggestion}
+                className="search-suggestion-chip"
+                onClick={() => onApplySuggestion(suggestion)}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </>
       )}
       <div className="search-results-list">
-        {results.map(({ category, categoryIndex, useCase }) => (
+        {results.map(({ category, categoryIndex, useCase, score, reasons }, index) => (
           <div
             key={useCase.id}
             className="search-result-item search-row"
             onClick={() => onSelectUseCase(category, categoryIndex)}
           >
             <div className="search-result-header">
-              <span className="search-result-method-name">{useCase.name}</span>
-              <span className="search-result-topic">
-                {category.icon} {category.name}
-              </span>
+              <div className="search-result-title-group">
+                <span className="search-result-rank">#{index + 1}</span>
+                <span className="search-result-method-name">{useCase.name}</span>
+              </div>
+              <div className="search-result-meta-group">
+                <span className="search-result-topic">
+                  {category.icon} {category.name}
+                </span>
+                <span className="search-result-score">
+                  Match {Math.min(99, Math.round((score / 30) * 100))}%
+                </span>
+              </div>
             </div>
-            <p className="search-result-excerpt">{useCase.description.slice(0, 140)}…</p>
+            {reasons.length > 0 && (
+              <div className="search-result-reasons">
+                {reasons.slice(0, 3).map((reason) => (
+                  <span key={reason} className="search-result-reason">
+                    {reason}
+                  </span>
+                ))}
+              </div>
+            )}
+            <p className="search-result-excerpt">{useCase.description.slice(0, 155)}…</p>
           </div>
         ))}
       </div>
@@ -1347,8 +1446,8 @@ export default function App() {
   }
 
   const searchPlaceholder = activeTab === "models"
-    ? "Search any method or concept…"
-    : "Search use cases…";
+    ? "Describe your goal (e.g., predict churn, detect fraud)…"
+    : "Describe a business problem (e.g., improve retention)…";
 
   const tabButtons = (className) => (
     <div className={className} aria-label="Section">
@@ -1445,7 +1544,11 @@ export default function App() {
             />
           )}
           {view.type === "search" && (
-            <SearchResults query={search} onSelectMethod={handleSelectMethod} />
+            <SearchResults
+              query={search}
+              onSelectMethod={handleSelectMethod}
+              onApplySuggestion={handleSearch}
+            />
           )}
           {view.type === "topic" && (
             <TopicPage
@@ -1479,6 +1582,7 @@ export default function App() {
             <UseCasesSearchResults
               query={search}
               onSelectUseCase={(cat, catIdx) => handleSelectCategory(cat, catIdx)}
+              onApplySuggestion={handleSearch}
             />
           )}
           {ucView.type === "category" && (

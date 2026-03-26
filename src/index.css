@@ -336,6 +336,12 @@ input:focus {
   font-family: var(--font-family-ui);
 }
 
+.search-box-input:focus {
+  outline: none;
+  border-color: var(--card-hover-border);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--card-hover-border) 22%, transparent);
+}
+
 .search-icon {
   position: absolute;
   left: 11px;
@@ -823,6 +829,13 @@ input:focus {
   letter-spacing: 0.08em;
 }
 
+.search-results-subtitle {
+  margin-top: 7px;
+  color: var(--hero-subtitle);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .search-results-list {
   display: flex;
   flex-direction: column;
@@ -845,9 +858,32 @@ input:focus {
 .search-result-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
-  margin-bottom: 5px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin-bottom: 7px;
+}
+
+.search-result-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-result-meta-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-result-rank {
+  font-size: 12px;
+  border: 1px solid var(--panel-border);
+  color: var(--muted-text);
+  border-radius: 999px;
+  padding: 2px 8px;
+  letter-spacing: 0.04em;
 }
 
 .search-result-method-name {
@@ -862,6 +898,15 @@ input:focus {
   color: var(--empty-state);
 }
 
+.search-result-score {
+  font-size: 12px;
+  color: var(--toggle-active-text);
+  background: var(--toggle-active-bg);
+  border-radius: 999px;
+  padding: 2px 8px;
+  letter-spacing: 0.04em;
+}
+
 .search-result-domains {
   display: flex;
   flex-wrap: wrap;
@@ -869,10 +914,48 @@ input:focus {
   margin-bottom: 6px;
 }
 
+.search-result-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.search-result-reason {
+  font-size: 12px;
+  color: var(--muted-text);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
 .search-result-excerpt {
   font-size: 14px;
   color: var(--hero-subtitle);
   line-height: 1.5;
+}
+
+.search-suggestion-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.search-suggestion-chip {
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--search-text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: var(--font-family-ui);
+  cursor: pointer;
+}
+
+.search-suggestion-chip:hover {
+  background: var(--hover-bg);
+  border-color: var(--card-hover-border);
 }
 
 .theme-toggle {
