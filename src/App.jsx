@@ -603,7 +603,7 @@ function SearchResults({ query, onSelectMethod, onApplySuggestion }) {
           {results.length} RANKED RESULT{results.length !== 1 ? "S" : ""} FOR "{query.toUpperCase()}"
         </span>
         <p className="search-results-subtitle">
-          Smart search is using intent, synonyms, and typo-tolerance.
+          Smart search is using semantic intent + synonyms + typo-tolerance.
           {topResult ? ` Best match confidence: ${confidence}%.` : ""}
         </p>
       </div>
@@ -626,7 +626,7 @@ function SearchResults({ query, onSelectMethod, onApplySuggestion }) {
         </>
       )}
       <div className="search-results-list">
-        {results.map(({ topic, method, score, reasons }, index) => (
+        {results.map(({ topic, method, score, reasons, semanticSimilarity }, index) => (
           <div
             key={`${method.id}-${topic.id}`}
             className="search-result-item search-row"
@@ -644,6 +644,11 @@ function SearchResults({ query, onSelectMethod, onApplySuggestion }) {
                 <span className="search-result-score">
                   Match {Math.min(99, Math.round((score / 30) * 100))}%
                 </span>
+                {semanticSimilarity > 0 && (
+                  <span className="search-result-score semantic">
+                    Semantic {Math.min(99, Math.round(semanticSimilarity * 100))}%
+                  </span>
+                )}
               </div>
             </div>
             <div className="search-result-domains">
@@ -850,7 +855,7 @@ function UseCasesSearchResults({ query, onSelectUseCase, onApplySuggestion }) {
           {results.length} RANKED RESULT{results.length !== 1 ? "S" : ""} FOR "{query.toUpperCase()}"
         </span>
         <p className="search-results-subtitle">
-          Matches include related methods, examples, and business context.
+          Matches include semantic intent, related methods, examples, and business context.
           {topResult ? ` Best match confidence: ${confidence}%.` : ""}
         </p>
       </div>
@@ -873,11 +878,11 @@ function UseCasesSearchResults({ query, onSelectUseCase, onApplySuggestion }) {
         </>
       )}
       <div className="search-results-list">
-        {results.map(({ category, categoryIndex, useCase, score, reasons }, index) => (
+        {results.map(({ category, categoryIndex, useCase, score, reasons, semanticSimilarity }, index) => (
           <div
             key={useCase.id}
             className="search-result-item search-row"
-            onClick={() => onSelectUseCase(category, categoryIndex)}
+            onClick={() => onSelectUseCase(category, categoryIndex, useCase.id)}
           >
             <div className="search-result-header">
               <div className="search-result-title-group">
@@ -891,6 +896,11 @@ function UseCasesSearchResults({ query, onSelectUseCase, onApplySuggestion }) {
                 <span className="search-result-score">
                   Match {Math.min(99, Math.round((score / 30) * 100))}%
                 </span>
+                {semanticSimilarity > 0 && (
+                  <span className="search-result-score semantic">
+                    Semantic {Math.min(99, Math.round(semanticSimilarity * 100))}%
+                  </span>
+                )}
               </div>
             </div>
             {reasons.length > 0 && (
@@ -1341,23 +1351,21 @@ export default function App() {
     const trimmed = val.trim();
 
     if (activeTab === "models") {
-      replaceHistoryState({ search: val });
       if (trimmed.length > 1) {
         const nextView = { type: "search", query: val };
         navigate(nextView, { replace: view.type === "search", historyOverrides: { search: val } });
       } else if (view.type === "search") {
-        goHome();
+        const nextView = { type: "home" };
+        setView(nextView);
+        replaceHistoryState({ view: nextView, search: val });
+      } else {
+        replaceHistoryState({ search: val });
       }
       return;
     }
 
     if (trimmed.length > 1) {
       pushHistoryState({ activeTab: "usecases", search: val });
-      return;
-    }
-
-    if (search.trim().length > 1) {
-      goUseCasesHome();
       return;
     }
 
@@ -1388,6 +1396,19 @@ export default function App() {
   function handleSelectCategory(category, categoryIndex) {
     setSearch("");
     const nextUcView = { type: "category", category, categoryIndex, openUseCaseId: null };
+    setUcView(nextUcView);
+    setActiveTab("usecases");
+    pushHistoryState({
+      activeTab: "usecases",
+      ucView: nextUcView,
+      search: "",
+    });
+  }
+
+  function handleSelectUseCaseFromSearch(category, categoryIndex, useCaseId) {
+    setSearch("");
+    const openUseCaseId = category.useCases.some((item) => item.id === useCaseId) ? useCaseId : null;
+    const nextUcView = { type: "category", category, categoryIndex, openUseCaseId };
     setUcView(nextUcView);
     setActiveTab("usecases");
     pushHistoryState({
@@ -1478,9 +1499,6 @@ export default function App() {
 
           <div className="header-divider" />
 
-          {/* Nav Tabs */}
-          {tabButtons("nav-tabs")}
-
           {/* Breadcrumb */}
           {activeTab === "models" && view.type === "topic" && (
             <div className="breadcrumb">{view.topic.icon} {view.topic.name}</div>
@@ -1514,21 +1532,27 @@ export default function App() {
               </span>
             )}
           </div>
+        </div>
 
-          {/* Mobile Tab Toggle */}
-          {tabButtons("nav-tabs-mobile")}
+        <div className="header-utility-bar">
+          <div className="header-utility-content">
+            <div className="header-utility-group">
+              <span className="header-utility-label">Browse</span>
+              {tabButtons("nav-tabs")}
+            </div>
 
-          <div className="theme-toggle" aria-label="Theme">
-            <button
-              className="theme-toggle-button"
-              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              <span className="theme-toggle-icon" aria-hidden="true">
-                {theme === "dark" ? "☀" : "☾"}
-              </span>
-            </button>
+            <div className="theme-toggle" aria-label="Theme">
+              <button
+                className="theme-toggle-button"
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                <span className="theme-toggle-icon" aria-hidden="true">
+                  {theme === "dark" ? "☀" : "☾"}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1581,7 +1605,9 @@ export default function App() {
           {ucView.type === "home" && search.trim().length > 1 && (
             <UseCasesSearchResults
               query={search}
-              onSelectUseCase={(cat, catIdx) => handleSelectCategory(cat, catIdx)}
+              onSelectUseCase={(cat, catIdx, useCaseId) =>
+                handleSelectUseCaseFromSearch(cat, catIdx, useCaseId)
+              }
               onApplySuggestion={handleSearch}
             />
           )}
