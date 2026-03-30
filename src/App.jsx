@@ -921,7 +921,7 @@ function UseCasesSearchResults({ query, onSelectUseCase, onApplySuggestion }) {
 }
 
 // ─── Use Cases Home Page ──────────────────────────────────────────────────────
-function UseCasesHomePage({ onSelectCategory, useCasesLayout, setUseCasesLayout }) {
+function UseCasesHomePage({ onSelectCategory, useCasesLayout }) {
   const useCasesHomeRef = useRef(null);
   const categoryCards = useMemo(
     () =>
@@ -945,22 +945,6 @@ function UseCasesHomePage({ onSelectCategory, useCasesLayout, setUseCasesLayout 
     <div className="home-page page-enter" ref={useCasesHomeRef}>
       <AtlasHero className="uc-hero" />
       <div className="use-cases-home">
-        <div className="home-controls">
-          <div className="layout-toggle" aria-label="Choose use-cases layout">
-            <button
-              className={`layout-toggle-button${useCasesLayout === "grid" ? " active" : ""}`}
-              onClick={() => setUseCasesLayout("grid")}
-            >
-              Tiles
-            </button>
-            <button
-              className={`layout-toggle-button${useCasesLayout === "list" ? " active" : ""}`}
-              onClick={() => setUseCasesLayout("list")}
-            >
-              List
-            </button>
-          </div>
-        </div>
         {useCasesLayout === "list" ? (
           <div key="usecases-list" className="uc-category-list layout-switch">
             {categoryCards.map(({ category: cat, categoryIndex, accent, animationDelay }) => {
@@ -1021,7 +1005,7 @@ function UseCasesHomePage({ onSelectCategory, useCasesLayout, setUseCasesLayout 
 }
 
 // ─── Home Page Component ──────────────────────────────────────────────────────
-function HomePage({ onSelectTopic, homeLayout, setHomeLayout }) {
+function HomePage({ onSelectTopic, homeLayout }) {
   const homePageRef = useRef(null);
 
   useEffect(() => {
@@ -1037,22 +1021,6 @@ function HomePage({ onSelectTopic, homeLayout, setHomeLayout }) {
 
       {/* Topic Grid/List */}
       <div className="grid-container">
-        <div className="home-controls">
-          <div className="layout-toggle" aria-label="Choose homepage layout">
-            <button
-              className={`layout-toggle-button${homeLayout === "grid" ? " active" : ""}`}
-              onClick={() => setHomeLayout("grid")}
-            >
-              Tiles
-            </button>
-            <button
-              className={`layout-toggle-button${homeLayout === "list" ? " active" : ""}`}
-              onClick={() => setHomeLayout("list")}
-            >
-              List
-            </button>
-          </div>
-        </div>
         {homeLayout === "list" ? (
           <div key="topics-list" className="topic-list layout-switch">
             {TOPICS.map((t, i) => {
@@ -1142,7 +1110,6 @@ export default function App() {
   const [search, setSearch] = useState(initialAppState.search);
   const [domainFilter, setDomainFilter] = useState(initialAppState.domainFilter);
   const [historyIndex, setHistoryIndex] = useState(initialAppState.historyIndex ?? 0);
-  const [useCasesLayout, setUseCasesLayout] = useState("grid");
   // Use-case state
   const [ucView, setUcView] = useState(initialAppState.ucView);
 
@@ -1469,6 +1436,14 @@ export default function App() {
   const searchPlaceholder = activeTab === "models"
     ? "Describe your goal (e.g., predict churn, detect fraud)…"
     : "Describe a business problem (e.g., improve retention)…";
+  const showLayoutToggle = activeTab === "models"
+    ? view.type === "home"
+    : ucView.type === "home" && search.trim().length <= 1;
+  const currentLayout = homeLayout;
+  const currentLayoutLabel = activeTab === "models"
+    ? "Choose homepage layout"
+    : "Choose use-cases layout";
+  const handleLayoutChange = (nextLayout) => setHomeLayout(nextLayout);
 
   const tabButtons = (className) => (
     <div className={className} aria-label="Section">
@@ -1541,17 +1516,36 @@ export default function App() {
               {tabButtons("nav-tabs")}
             </div>
 
-            <div className="theme-toggle" aria-label="Theme">
-              <button
-                className="theme-toggle-button"
-                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                <span className="theme-toggle-icon" aria-hidden="true">
-                  {theme === "dark" ? "☀" : "☾"}
-                </span>
-              </button>
+            <div className="header-utility-actions">
+              {showLayoutToggle && (
+                <div className="layout-toggle" aria-label={currentLayoutLabel}>
+                  <button
+                    className={`layout-toggle-button${currentLayout === "grid" ? " active" : ""}`}
+                    onClick={() => handleLayoutChange("grid")}
+                  >
+                    Tiles
+                  </button>
+                  <button
+                    className={`layout-toggle-button${currentLayout === "list" ? " active" : ""}`}
+                    onClick={() => handleLayoutChange("list")}
+                  >
+                    List
+                  </button>
+                </div>
+              )}
+
+              <div className="theme-toggle" aria-label="Theme">
+                <button
+                  className="theme-toggle-button"
+                  onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                  aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                  title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                >
+                  <span className="theme-toggle-icon" aria-hidden="true">
+                    {theme === "dark" ? "☀" : "☾"}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1564,7 +1558,6 @@ export default function App() {
             <HomePage
               onSelectTopic={handleSelectTopic}
               homeLayout={homeLayout}
-              setHomeLayout={setHomeLayout}
             />
           )}
           {view.type === "search" && (
@@ -1598,8 +1591,7 @@ export default function App() {
           {ucView.type === "home" && search.trim().length <= 1 && (
             <UseCasesHomePage
               onSelectCategory={handleSelectCategory}
-              useCasesLayout={useCasesLayout}
-              setUseCasesLayout={setUseCasesLayout}
+              useCasesLayout={homeLayout}
             />
           )}
           {ucView.type === "home" && search.trim().length > 1 && (
