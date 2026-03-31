@@ -1,7 +1,7 @@
-﻿// Use cases organized by business domain, written for a non-technical audience.
+// Use cases organized by business domain, written for a non-technical audience.
 // Each category groups scenarios that AI / ML / Statistics can solve.
 
-export const USE_CASE_CATEGORIES = [
+const BASE_USE_CASE_CATEGORIES = [
   {
     id: "sales-marketing",
     icon: "📣",
@@ -1258,3 +1258,610 @@ export const USE_CASE_CATEGORIES = [
     ],
   },
 ];
+
+const ADDITIONAL_USE_CASES_BY_CATEGORY = {
+  "sales-marketing": [
+    {
+      id: "next-best-offer",
+      name: "Next-Best-Offer Targeting",
+      description: "Decide which product, discount, or message to show each customer next so every campaign feels more relevant and converts better.",
+      examples: [
+        "A telecom provider chooses whether each customer should see an upgrade offer, a retention discount, or a device bundle based on recent behavior.",
+        "A bank personalizes credit-card cross-sell offers so high-income customers see premium products while students see no-fee cards.",
+      ],
+      poweredBy: "Propensity models estimate how likely each customer is to respond to each possible offer, while bandit-style policies keep learning which option works best. The system looks at behavior, purchase history, channel preference, and timing, then picks the offer most likely to drive action without wasting discounts on people who would have converted anyway.",
+      relatedMethods: [
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "contextual-bandit", topicId: "recommenders", name: "Contextual Bandit" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "finance-accounting": [
+    {
+      id: "cash-flow-forecasting",
+      name: "Cash Flow Forecasting",
+      description: "Project incoming and outgoing cash so finance teams can avoid shortfalls, time borrowing correctly, and plan spending with confidence.",
+      examples: [
+        "A CFO forecasts weekly cash balances to decide whether a short-term credit facility will be needed before payroll.",
+        "A manufacturing firm predicts when large supplier payments will hit so it can delay non-essential spend without missing obligations.",
+      ],
+      poweredBy: "Time-series and regression models learn patterns in receivables, payables, seasonality, payroll cycles, and one-off events. The system combines historical cash movements with upcoming invoices and payment behavior to estimate how much money will be available on each future date, giving finance a forward-looking view instead of a backward-looking ledger.",
+      relatedMethods: [
+        { methodId: "prophet", topicId: "timeseries", name: "Prophet" },
+        { methodId: "arima", topicId: "timeseries", name: "ARIMA / SARIMA" },
+        { methodId: "rf-reg", topicId: "regression", name: "Random Forest Regressor" },
+      ],
+    },
+  ],
+  "operations-supply-chain": [
+    {
+      id: "supplier-delay-risk",
+      name: "Supplier Delay Risk",
+      description: "Predict which suppliers, shipments, or purchase orders are likely to arrive late so planners can react before production or service levels are hit.",
+      examples: [
+        "A manufacturer flags component orders that are likely to miss promised dates and lines up backup vendors before assembly is affected.",
+        "A retailer identifies inbound shipments at risk from port congestion and rebalances inventory before stores run short.",
+      ],
+      poweredBy: "Delay-risk models combine supplier history, lead-time variability, route conditions, customs patterns, weather, and order characteristics to estimate whether a delivery is likely to slip. The system gives planners an early-warning view of supply risk so they can expedite alternatives, adjust schedules, or rebalance stock before a late shipment becomes a bigger operational problem.",
+      relatedMethods: [
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "rf-clf", topicId: "classification", name: "Random Forest (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "healthcare-life-sciences": [
+    {
+      id: "readmission-risk",
+      name: "Hospital Readmission Risk",
+      description: "Predict which patients are most likely to return soon after discharge so clinicians can intervene with follow-ups, medication checks, or care coordination.",
+      examples: [
+        "A hospital flags high-risk heart-failure patients for a nurse call within 48 hours of discharge.",
+        "A care-management team assigns extra support to patients whose history suggests they are likely to return to the emergency department.",
+      ],
+      poweredBy: "Classification models combine diagnoses, lab results, prior admissions, medications, and social factors to estimate post-discharge risk. The system looks for patterns shared by patients who were readmitted in the past and produces a risk score for each new discharge, helping providers focus limited follow-up resources where they can prevent avoidable returns.",
+      relatedMethods: [
+        { methodId: "logistic", topicId: "classification", name: "Logistic Regression" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "hr-people": [
+    {
+      id: "employee-attrition-risk",
+      name: "Employee Attrition Risk",
+      description: "Estimate which employees are most likely to leave so managers can act early with better support, compensation, or career planning.",
+      examples: [
+        "A people-analytics team identifies flight-risk engineers after compensation reviews, manager changes, and drops in engagement scores.",
+        "A retailer spots stores where attrition risk is rising and intervenes before staffing gaps hurt customer service.",
+      ],
+      poweredBy: "Attrition models learn from historical resignation patterns using tenure, pay progression, performance reviews, commute, internal mobility, and engagement data. The system turns many weak signals into a practical risk score, helping HR focus retention efforts on the teams and individuals where intervention is most likely to make a difference.",
+      relatedMethods: [
+        { methodId: "logistic", topicId: "classification", name: "Logistic Regression" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "customer-service": [
+    {
+      id: "ticket-triage-routing",
+      name: "Ticket Triage & Routing",
+      description: "Automatically read incoming support requests and send each one to the right queue, team, or urgency level without manual sorting.",
+      examples: [
+        "A software company routes billing questions, bug reports, and feature requests to different queues within seconds of ticket creation.",
+        "An enterprise support team flags tickets mentioning outages or security incidents for immediate escalation.",
+      ],
+      poweredBy: "Text-classification models and LLMs read the content of emails, chats, and forms to infer intent, product area, urgency, and required skills. The system acts like a highly consistent first-line triage specialist, reducing back-and-forth, shortening first-response times, and making sure the right expert sees the issue first.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+      ],
+    },
+  ],
+  "product-engineering": [
+    {
+      id: "bug-triage-prioritisation",
+      name: "Bug Triage & Prioritisation",
+      description: "Rank incoming bugs by likely severity, user impact, and engineering urgency so teams fix the most important issues first.",
+      examples: [
+        "A SaaS team predicts which bug reports are likely to affect paying customers and pushes them to the top of the queue.",
+        "A mobile app team groups duplicate crash reports and highlights the issues most likely to damage App Store ratings.",
+      ],
+      poweredBy: "Classification models and language models read bug reports, logs, affected components, and historical resolution patterns to estimate priority. Instead of every issue starting in the same pile, the system surfaces the reports most likely to be real, severe, and broadly impactful, helping engineering spend time where it matters most.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+      ],
+    },
+  ],
+  "legal-compliance": [
+    {
+      id: "contract-clause-extraction",
+      name: "Contract Clause Extraction",
+      description: "Automatically pull out key clauses such as renewal terms, liability caps, notice periods, and governing law from large contract sets.",
+      examples: [
+        "A legal ops team scans 5,000 vendor contracts to find which ones allow automatic renewal within the next quarter.",
+        "A procurement team identifies all agreements missing a data-processing clause before a compliance audit.",
+      ],
+      poweredBy: "Entity extraction and LLM-based document understanding models read long legal documents and tag the sections that matter. The system turns dense contract language into structured fields you can filter, compare, and review, saving lawyers from manually hunting through hundreds of pages just to answer a simple operational question.",
+      relatedMethods: [
+        { methodId: "ner", topicId: "nlp", name: "Named Entity Recognition (NER)" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "rag", topicId: "genai", name: "Retrieval-Augmented Generation (RAG)" },
+      ],
+    },
+  ],
+  "retail-ecommerce": [
+    {
+      id: "return-fraud-detection",
+      name: "Return Fraud Detection",
+      description: "Flag suspicious return behavior such as serial wardrobing, receipt fraud, or unusually high-value refund patterns before money is lost.",
+      examples: [
+        "A fashion retailer identifies customers repeatedly returning worn items after major events and blocks instant refunds for review.",
+        "An electronics store spots coordinated refund abuse across multiple accounts using the same devices and addresses.",
+      ],
+      poweredBy: "Anomaly detection and fraud-classification models learn what normal return behavior looks like across products, customers, stores, and timing. The system notices when patterns drift into suspicious territory - too frequent, too costly, too coordinated - and sends those cases for review while letting normal returns flow through quickly.",
+      relatedMethods: [
+        { methodId: "isoforest", topicId: "anomaly", name: "Isolation Forest" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "rf-clf", topicId: "classification", name: "Random Forest (Classifier)" },
+      ],
+    },
+  ],
+  "real-estate-construction": [
+    {
+      id: "construction-delay-forecasting",
+      name: "Construction Delay Forecasting",
+      description: "Predict which projects or milestones are likely to slip so teams can reallocate crews, materials, or subcontractors before deadlines are missed.",
+      examples: [
+        "A builder flags apartment projects likely to miss handover because inspections, weather delays, and supplier lead times are stacking up.",
+        "An infrastructure contractor predicts which work packages are at highest risk of overrunning the baseline schedule next month.",
+      ],
+      poweredBy: "Forecasting and risk models combine schedule history, weather, labor availability, permit timelines, inspection results, and supplier performance to estimate delay probability. The system acts like an early-warning layer on top of the project plan, highlighting which milestones are drifting and which controllable factors are driving the risk.",
+      relatedMethods: [
+        { methodId: "gbm-reg", topicId: "regression", name: "Gradient Boosting Regressor" },
+        { methodId: "cox", topicId: "survival", name: "Cox Proportional Hazards" },
+        { methodId: "rf-reg", topicId: "regression", name: "Random Forest Regressor" },
+      ],
+    },
+  ],
+  education: [
+    {
+      id: "student-dropout-risk",
+      name: "Student Dropout Risk",
+      description: "Identify students who are likely to disengage or drop out so institutions can intervene with tutoring, outreach, or financial support.",
+      examples: [
+        "A university flags first-year students whose attendance and LMS usage suddenly fall after midterms.",
+        "An online course platform identifies learners who are likely to abandon a certification program unless nudged back quickly.",
+      ],
+      poweredBy: "Retention models combine attendance, grades, assignment completion, engagement data, and support history to estimate dropout risk. The system spots the same early warning signs seen in past departures and turns them into a practical action list for advisors, instructors, and student-success teams.",
+      relatedMethods: [
+        { methodId: "logistic", topicId: "classification", name: "Logistic Regression" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "media-entertainment": [
+    {
+      id: "subscriber-churn-prevention",
+      name: "Subscriber Churn Prevention",
+      description: "Predict which viewers, listeners, or readers are about to cancel so retention teams can intervene before subscriptions disappear.",
+      examples: [
+        "A streaming platform targets subscribers whose watch time has collapsed with content recommendations and retention offers.",
+        "A digital publisher spots premium readers who have stopped opening newsletters and sends tailored win-back campaigns.",
+      ],
+      poweredBy: "Churn models learn from consumption frequency, content preferences, device changes, support contacts, payment issues, and pricing sensitivity. The system translates subtle engagement decline into a risk score, allowing teams to deliver the right retention action before a quiet user disappears for good.",
+      relatedMethods: [
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "cox", topicId: "survival", name: "Cox Proportional Hazards" },
+        { methodId: "contextual-bandit", topicId: "recommenders", name: "Contextual Bandit" },
+      ],
+    },
+  ],
+  "agriculture-environment": [
+    {
+      id: "crop-disease-detection",
+      name: "Crop Disease Detection",
+      description: "Detect plant disease early from leaf images or drone footage so farmers can act before infection spreads across a field.",
+      examples: [
+        "A greenhouse operator uses phone photos to catch mildew in cucumbers before an entire section needs to be discarded.",
+        "A vineyard uses drone imagery to identify stressed vines and treat only the affected rows instead of spraying the whole property.",
+      ],
+      poweredBy: "Computer-vision models learn visual patterns associated with healthy and diseased plants, often from thousands of labeled images. The system turns ordinary images into fast field diagnostics, helping growers move from blanket treatment to targeted intervention that saves both crop yield and chemical cost.",
+      relatedMethods: [
+        { methodId: "cnn", topicId: "deeplearning", name: "Convolutional Neural Network (CNN)" },
+        { methodId: "transfer", topicId: "deeplearning", name: "Transfer Learning / Fine-Tuning" },
+        { methodId: "segmentation", topicId: "deeplearning", name: "Image Segmentation" },
+      ],
+    },
+  ],
+  "government-public-sector": [
+    {
+      id: "benefits-fraud-detection",
+      name: "Benefits Fraud Detection",
+      description: "Flag suspicious claims or applications so investigators can focus on the cases most likely to involve misuse of public funds.",
+      examples: [
+        "A benefits agency identifies clusters of claims using shared addresses, phone numbers, and bank details for manual review.",
+        "A municipality spots unusual reimbursement patterns that suggest duplicate submissions across multiple programs.",
+      ],
+      poweredBy: "Fraud models compare each application or claim against normal behavior using transaction history, identity links, timing, and network patterns. The system helps investigators separate rare but valid cases from truly suspicious ones, reducing manual workload while improving the odds of catching organized abuse.",
+      relatedMethods: [
+        { methodId: "isoforest", topicId: "anomaly", name: "Isolation Forest" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "general-business": [
+    {
+      id: "kpi-anomaly-alerts",
+      name: "KPI Anomaly Alerts",
+      description: "Automatically detect when an important metric suddenly moves in an unusual way so leaders can investigate before a small issue turns into a big one.",
+      examples: [
+        "An executive team gets an alert when conversion rate drops sharply in one region even though traffic looks normal.",
+        "An operations dashboard flags an unusual spike in refund requests before the weekly business review catches it.",
+      ],
+      poweredBy: "Anomaly-detection methods learn the normal range and rhythm of key metrics, then alert when values break the expected pattern. Instead of waiting for someone to notice a chart drift in a dashboard, the system continuously watches for meaningful deviations and points teams toward the metrics that deserve immediate attention.",
+      relatedMethods: [
+        { methodId: "zscore", topicId: "anomaly", name: "Z-Score / σ-Rule" },
+        { methodId: "isoforest", topicId: "anomaly", name: "Isolation Forest" },
+        { methodId: "spectral-anom", topicId: "anomaly", name: "Spectral Residual" },
+      ],
+    },
+  ],
+};
+
+
+const MINIMUM_USE_CASE_TOP_UPS_BY_CATEGORY = {
+  "hr-people": [
+    {
+      id: "offer-acceptance-forecasting",
+      name: "Offer Acceptance Forecasting",
+      description: "Predict which candidates are likely to reject an offer so recruiters can intervene earlier with compensation, timing, or manager outreach.",
+      examples: [
+        "A startup flags engineering candidates who are likely to decline unless the hiring manager calls within 24 hours.",
+        "A hospital system identifies nursing candidates who may reject offers because competing employers are moving faster.",
+      ],
+      poweredBy: "Classification models learn from past offers using compensation gaps, interview feedback, role demand, time-to-offer, location, and competing-market conditions. The system converts those signals into a practical risk score so recruiters know which offers need extra attention before strong candidates disappear from the pipeline.",
+      relatedMethods: [
+        { methodId: "logistic", topicId: "classification", name: "Logistic Regression" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "customer-service": [
+    {
+      id: "customer-escalation-risk",
+      name: "Customer Escalation Risk",
+      description: "Predict which support conversations are likely to escalate into complaints, churn threats, or executive attention so teams can step in earlier.",
+      examples: [
+        "A SaaS company flags support threads mentioning cancellation, repeated outages, and unresolved billing issues before the account manager gets surprised.",
+        "An airline identifies service interactions that are likely to spill into public social complaints unless a supervisor intervenes quickly.",
+      ],
+      poweredBy: "Text and behavior models combine message content, sentiment shifts, wait times, issue history, and customer value to estimate escalation risk. The system acts like an early-warning layer on top of the support queue, helping experienced agents and supervisors focus on the conversations most likely to become expensive or reputationally damaging.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+    {
+      id: "knowledge-base-gap-detection",
+      name: "Knowledge Base Gap Detection",
+      description: "Find recurring issues that customers keep asking about but that your help center does not explain clearly enough.",
+      examples: [
+        "An e-commerce brand notices thousands of repeat questions about refund timing and writes a clearer self-service article before peak season.",
+        "A B2B software team spots a pattern of setup mistakes that support agents explain manually every week because the documentation is still too shallow.",
+      ],
+      poweredBy: "NLP and retrieval models cluster incoming tickets, compare them with existing documentation, and highlight where customer demand is not matched by usable help content. The system shows which unanswered themes are driving avoidable support volume so documentation teams can create the articles, FAQs, and guided flows with the biggest deflection payoff.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "rag", topicId: "genai", name: "Retrieval-Augmented Generation (RAG)" },
+      ],
+    },
+  ],
+  "product-engineering": [
+    {
+      id: "release-regression-risk",
+      name: "Release Regression Risk",
+      description: "Estimate whether an upcoming release is likely to introduce bugs, performance problems, or outages before it reaches users.",
+      examples: [
+        "A platform team scores each Friday release based on code churn, failed tests, and component history before deciding whether to hold the rollout.",
+        "A mobile team flags builds that are more likely to trigger app crashes after launch because they touch historically fragile modules.",
+      ],
+      poweredBy: "Risk models learn from historical deployments using change size, affected services, test coverage, defect history, incident patterns, and review signals. The system helps engineering leaders focus release reviews on the builds that deserve extra caution instead of treating every deployment as equally safe.",
+      relatedMethods: [
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "isoforest", topicId: "anomaly", name: "Isolation Forest" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+  ],
+  "legal-compliance": [
+    {
+      id: "third-party-compliance-risk",
+      name: "Third-Party Compliance Risk Scoring",
+      description: "Score vendors, partners, and suppliers by likely compliance risk before onboarding, renewal, or deeper due diligence.",
+      examples: [
+        "A financial-services firm prioritizes vendor reviews by identifying partners with elevated privacy, security, or sanctions exposure.",
+        "A manufacturer flags suppliers whose audit history and public disclosures suggest a higher chance of labor or environmental compliance issues.",
+      ],
+      poweredBy: "Risk models combine questionnaires, audit findings, news signals, contract details, and historical incidents to estimate third-party exposure. The system gives legal and compliance teams a faster way to separate low-risk vendors from the relationships that deserve deeper scrutiny before they create operational or regulatory headaches.",
+      relatedMethods: [
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "rag", topicId: "genai", name: "Retrieval-Augmented Generation (RAG)" },
+      ],
+    },
+    {
+      id: "policy-violation-monitoring",
+      name: "Policy Violation Monitoring",
+      description: "Flag potential internal-policy breaches in communications, transactions, or case records so compliance teams can review the highest-risk activity first.",
+      examples: [
+        "A bank highlights employee communications that may involve off-channel conduct or inappropriate sharing of client information.",
+        "A healthcare organization flags case notes and access patterns that may indicate policy violations around protected data handling.",
+      ],
+      poweredBy: "NLP and classification models read structured and unstructured records for patterns associated with past policy breaches. The system acts like a tireless first-pass reviewer, surfacing the communications and events most likely to matter so compliance teams can focus on investigation instead of trawling through huge volumes of low-value material.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+      ],
+    },
+    {
+      id: "privacy-request-triage",
+      name: "Privacy Request Triage",
+      description: "Automatically sort data-access, deletion, correction, and portability requests so privacy teams can meet deadlines with less manual sorting.",
+      examples: [
+        "A consumer brand routes incoming requests into access, deletion, and identity-verification queues within seconds instead of relying on manual inbox review.",
+        "A SaaS company flags requests referencing legal deadlines or multiple jurisdictions so privacy counsel can review them sooner.",
+      ],
+      poweredBy: "Entity extraction and intent-classification models identify what the requester wants, which systems may be involved, and how urgent the case appears. The system turns a noisy inbox into a structured workflow, helping privacy teams respond faster and reduce the risk of missing regulated response windows.",
+      relatedMethods: [
+        { methodId: "ner", topicId: "nlp", name: "Named Entity Recognition (NER)" },
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+      ],
+    },
+  ],
+  "retail-ecommerce": [
+    {
+      id: "dynamic-markdown-optimization",
+      name: "Dynamic Markdown Optimization",
+      description: "Decide when and how much to discount aging inventory so stock clears faster without giving away more margin than necessary.",
+      examples: [
+        "A fashion retailer adjusts markdown timing by store and product family instead of running the same discount everywhere.",
+        "An electronics marketplace identifies when slower-moving accessories need a price cut to clear before the next product launch.",
+      ],
+      poweredBy: "Pricing and demand models learn how sales respond to timing, discount depth, seasonality, inventory age, and local demand. The system helps merchants balance sell-through and margin by recommending the markdown strategy most likely to move stock without training customers to wait for unnecessary discounts.",
+      relatedMethods: [
+        { methodId: "gbm-reg", topicId: "regression", name: "Gradient Boosting Regressor" },
+        { methodId: "contextual-bandit", topicId: "recommenders", name: "Contextual Bandit" },
+        { methodId: "rf-reg", topicId: "regression", name: "Random Forest Regressor" },
+      ],
+    },
+    {
+      id: "shelf-availability-monitoring",
+      name: "Shelf Availability Monitoring",
+      description: "Detect empty shelves, misplaced products, or poor in-store execution from images so teams can fix lost sales opportunities faster.",
+      examples: [
+        "A grocery chain uses aisle photos to spot fast-moving products that have gone out of stock before store staff notice.",
+        "A consumer-goods brand checks whether promotional displays were actually set up correctly across retail locations.",
+      ],
+      poweredBy: "Computer-vision models inspect shelf images for gaps, facings, placement errors, and planogram drift. The system turns store imagery into a real-time picture of what shoppers can actually buy, helping retail teams close the gap between inventory on paper and products physically available to customers.",
+      relatedMethods: [
+        { methodId: "cnn", topicId: "deeplearning", name: "Convolutional Neural Network (CNN)" },
+        { methodId: "segmentation", topicId: "deeplearning", name: "Image Segmentation" },
+        { methodId: "isoforest", topicId: "anomaly", name: "Isolation Forest" },
+      ],
+    },
+  ],
+  "real-estate-construction": [
+    {
+      id: "lease-renewal-risk",
+      name: "Lease Renewal Risk",
+      description: "Predict which tenants are unlikely to renew so leasing teams can act before vacancy risk turns into lost revenue.",
+      examples: [
+        "A commercial landlord flags tenants whose foot traffic and payment behavior suggest they may downsize or leave at renewal.",
+        "A residential operator identifies renters who are likely to move out unless maintenance issues and pricing concerns are addressed early.",
+      ],
+      poweredBy: "Renewal-risk models learn from payment history, maintenance issues, local market conditions, occupancy patterns, and past lease outcomes. The system gives asset managers an early warning on likely churn so they can prioritize outreach, incentives, and pricing strategy before units or suites sit empty.",
+      relatedMethods: [
+        { methodId: "logistic", topicId: "classification", name: "Logistic Regression" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+    {
+      id: "maintenance-work-order-prioritisation",
+      name: "Maintenance Work Order Prioritisation",
+      description: "Rank building issues by urgency, likely tenant impact, and failure risk so limited maintenance teams work the right jobs first.",
+      examples: [
+        "A property manager prioritizes water leaks affecting multiple units over cosmetic requests that can wait another day.",
+        "A facilities team routes elevator, HVAC, and security issues to the top of the queue when the wording suggests high operational impact.",
+      ],
+      poweredBy: "Text and risk models classify incoming work orders using problem descriptions, asset history, past repair outcomes, and tenant impact. The system helps operations teams move beyond first-come, first-served maintenance by identifying which tickets are most likely to escalate into safety issues, downtime, or resident dissatisfaction.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+    {
+      id: "site-safety-incident-prevention",
+      name: "Site Safety Incident Prevention",
+      description: "Flag projects, crews, or conditions associated with a rising chance of safety incidents so supervisors can intervene earlier.",
+      examples: [
+        "A contractor identifies sites where overtime, weather, and prior near misses are creating elevated accident risk this week.",
+        "A developer spots subcontractor combinations that historically correlate with more safety events and adds extra oversight.",
+      ],
+      poweredBy: "Anomaly and risk models combine site logs, weather, inspection findings, overtime patterns, equipment usage, and incident history to estimate safety exposure. The system turns fragmented project data into an actionable risk view so safety leaders can focus training, inspections, and supervision before an accident occurs.",
+      relatedMethods: [
+        { methodId: "isoforest", topicId: "anomaly", name: "Isolation Forest" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "cox", topicId: "survival", name: "Cox Proportional Hazards" },
+      ],
+    },
+  ],
+  education: [
+    {
+      id: "enrollment-yield-prediction",
+      name: "Enrollment Yield Prediction",
+      description: "Predict which admitted students are most likely to enroll so institutions can focus outreach and scholarship spend where it will matter most.",
+      examples: [
+        "A university identifies admitted students who are on the fence and sends targeted counselor outreach before decision deadlines.",
+        "A business school estimates which applicants are likely to accept without extra scholarship support and reserves aid for more uncertain admits.",
+      ],
+      poweredBy: "Yield models learn from application history, demographics, scholarship offers, geography, engagement, and prior admission cycles. The system gives enrollment teams a sharper view of who is likely to say yes, helping them plan class mix, outreach, and financial-aid strategy with less guesswork.",
+      relatedMethods: [
+        { methodId: "logistic", topicId: "classification", name: "Logistic Regression" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+    {
+      id: "course-demand-forecasting",
+      name: "Course Demand Forecasting",
+      description: "Forecast future enrollment by course, section, or campus so timetables, instructors, and classroom capacity can be planned more accurately.",
+      examples: [
+        "A university predicts unusually high demand for introductory data courses and opens extra sections before registration week.",
+        "A training provider forecasts demand for certification modules by quarter so it can staff instructors before waitlists build up.",
+      ],
+      poweredBy: "Forecasting models learn from registration history, prerequisites, academic calendars, seasonality, marketing activity, and degree requirements. The system helps academic planners match supply with actual student demand, reducing overcrowded classes, underfilled sections, and last-minute scheduling chaos.",
+      relatedMethods: [
+        { methodId: "prophet", topicId: "timeseries", name: "Prophet" },
+        { methodId: "arima", topicId: "timeseries", name: "ARIMA / SARIMA" },
+        { methodId: "rf-reg", topicId: "regression", name: "Random Forest Regressor" },
+      ],
+    },
+    {
+      id: "student-support-case-triage",
+      name: "Student Support Case Triage",
+      description: "Route advising, financial-aid, wellness, and administrative requests to the right team faster so students get help without bouncing between offices.",
+      examples: [
+        "A university sorts student emails into bursar, registrar, advising, and counseling queues within seconds of receipt.",
+        "An online education provider flags support cases that involve deadlines, accessibility issues, or mental-health concerns for faster review.",
+      ],
+      poweredBy: "Language models classify request intent, urgency, and likely destination based on message content and prior support patterns. The system works like a smart intake desk, reducing routing mistakes and helping institutions respond faster during peak periods such as registration, exams, and aid deadlines.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+      ],
+    },
+  ],
+  "media-entertainment": [
+    {
+      id: "content-performance-forecasting",
+      name: "Content Performance Forecasting",
+      description: "Forecast the likely audience for upcoming shows, articles, videos, or podcasts so teams can plan promotion and inventory more effectively.",
+      examples: [
+        "A streaming service predicts which new releases are likely to overperform and allocates homepage promotion accordingly.",
+        "A publisher estimates expected traffic for upcoming investigations so the advertising team can plan inventory and sponsorships.",
+      ],
+      poweredBy: "Forecasting and regression models learn from historical audience behavior, creator popularity, release timing, topic trends, and promotional support. The system helps content teams estimate likely reach before launch, making marketing and scheduling decisions less subjective.",
+      relatedMethods: [
+        { methodId: "prophet", topicId: "timeseries", name: "Prophet" },
+        { methodId: "gbm-reg", topicId: "regression", name: "Gradient Boosting Regressor" },
+        { methodId: "shap", topicId: "modeleval", name: "SHAP (Shapley Values)" },
+      ],
+    },
+    {
+      id: "thumbnail-creative-optimization",
+      name: "Thumbnail & Creative Optimization",
+      description: "Choose the thumbnail, headline, or promo creative most likely to win attention from each audience segment.",
+      examples: [
+        "A streaming platform serves different artwork variants for the same title depending on what similar viewers have responded to before.",
+        "A podcast network tests multiple cover images and episode titles to improve click-through without relying only on manual editor judgment.",
+      ],
+      poweredBy: "Bandit policies and vision models learn which creative variants perform best for different audiences and contexts. The system keeps improving as it sees more impressions, balancing experimentation with performance so marketing teams can find stronger creative combinations faster than static A/B testing alone.",
+      relatedMethods: [
+        { methodId: "contextual-bandit", topicId: "recommenders", name: "Contextual Bandit" },
+        { methodId: "cnn", topicId: "deeplearning", name: "Convolutional Neural Network (CNN)" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+      ],
+    },
+  ],
+  "agriculture-environment": [
+    {
+      id: "yield-forecasting",
+      name: "Yield Forecasting",
+      description: "Predict expected crop output by field, variety, or season so growers can plan labor, storage, and sales commitments more confidently.",
+      examples: [
+        "A grain producer estimates harvest volume by field before combine crews are scheduled and storage contracts are finalized.",
+        "A fruit grower forecasts likely output by orchard block so sales teams can set expectations with buyers earlier.",
+      ],
+      poweredBy: "Forecasting and regression models combine weather history, satellite imagery, soil conditions, crop stage, and management practices to estimate future yield. The system helps farms replace rough intuition with a more reliable production outlook, which improves both operational planning and commercial decisions.",
+      relatedMethods: [
+        { methodId: "prophet", topicId: "timeseries", name: "Prophet" },
+        { methodId: "gbm-reg", topicId: "regression", name: "Gradient Boosting Regressor" },
+        { methodId: "rf-reg", topicId: "regression", name: "Random Forest Regressor" },
+      ],
+    },
+    {
+      id: "irrigation-need-prediction",
+      name: "Irrigation Need Prediction",
+      description: "Estimate when and how much to irrigate so crops stay healthy without wasting water or energy.",
+      examples: [
+        "A vineyard predicts which blocks need irrigation tomorrow based on weather, soil moisture, and vine stress signals.",
+        "A large farm reduces overwatering by using field-level forecasts instead of applying the same schedule everywhere.",
+      ],
+      poweredBy: "Regression and forecasting models combine soil moisture, weather forecasts, crop stage, evapotranspiration, and historical irrigation outcomes to estimate water need. The system helps growers move from fixed schedules to targeted irrigation decisions that improve resilience and reduce resource use.",
+      relatedMethods: [
+        { methodId: "gbm-reg", topicId: "regression", name: "Gradient Boosting Regressor" },
+        { methodId: "rf-reg", topicId: "regression", name: "Random Forest Regressor" },
+        { methodId: "prophet", topicId: "timeseries", name: "Prophet" },
+      ],
+    },
+  ],
+  "government-public-sector": [
+    {
+      id: "permit-review-triage",
+      name: "Permit Review Triage",
+      description: "Route permit and license applications by complexity, urgency, and likely review path so straightforward cases move faster.",
+      examples: [
+        "A city sorts building permits into standard, high-risk, and specialist-review queues instead of treating every submission the same way.",
+        "A business-licensing office flags applications likely to be delayed by missing documents before they sit untouched in a backlog.",
+      ],
+      poweredBy: "Language and risk models read application text, forms, attachments, and historical review outcomes to estimate complexity and required expertise. The system helps agencies reduce backlog and citizen wait times by sending simpler cases down faster paths while reserving senior review capacity for the most complex submissions.",
+      relatedMethods: [
+        { methodId: "bert", topicId: "nlp", name: "BERT / Transformer Embeddings" },
+        { methodId: "llm", topicId: "genai", name: "Large Language Models (LLMs)" },
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+      ],
+    },
+    {
+      id: "infrastructure-maintenance-prioritisation",
+      name: "Infrastructure Maintenance Prioritisation",
+      description: "Rank roads, bridges, pipes, and public assets by failure risk and service impact so limited budgets go to the most urgent work first.",
+      examples: [
+        "A municipality prioritizes pipe replacements in neighborhoods where break risk and service disruption are both rising.",
+        "A transport agency identifies bridge inspections that should be accelerated because deterioration patterns suggest elevated structural risk.",
+      ],
+      poweredBy: "Risk models combine inspection history, age, repair records, sensor data, usage intensity, and environmental conditions to estimate where failure is most likely and most costly. The system gives public-sector asset managers a clearer, more defensible basis for maintenance planning than intuition or age alone.",
+      relatedMethods: [
+        { methodId: "gbm-clf", topicId: "classification", name: "Gradient Boosting (Classifier)" },
+        { methodId: "cox", topicId: "survival", name: "Cox Proportional Hazards" },
+        { methodId: "isoforest", topicId: "anomaly", name: "Isolation Forest" },
+      ],
+    },
+  ],
+};
+
+
+export const USE_CASE_CATEGORIES = BASE_USE_CASE_CATEGORIES.map((category) => ({
+  ...category,
+  useCases: [
+    ...category.useCases,
+    ...(ADDITIONAL_USE_CASES_BY_CATEGORY[category.id] ?? []),
+    ...(MINIMUM_USE_CASE_TOP_UPS_BY_CATEGORY[category.id] ?? []),
+  ],
+}));
